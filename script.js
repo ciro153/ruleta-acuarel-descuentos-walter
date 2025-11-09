@@ -1,9 +1,60 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2865
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww14500\viewh15600\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+// --- CONFIGURACIÓN CLAVE ---
+const PROBABILIDAD_GANAR = 4; // Probabilidad: 1 de cada 4 giros gana (25%).
+const CODIGO_DESCUENTO = "RULETA-5OFF"; 
+const PORCENTAJE_DESCUENTO = "5%";
+const ENLACE_CATALOGO = "https://www.tuempresa.com/catalogo"; // 👈 ¡TU ENLACE PERSONALIZADO!
+// ----------------------------
 
-\f0\fs24 \cf0 const CODIGO_DESCUENTO = "RULETA-5OFF"; // Por ejemplo: "OFERTA-WALTER"\
-const ENLACE_CATALOGO = "https://www.tuempresa.com/catalogo"; // \'a1PON EL LINK REAL DEL CAT\'c1LOGO AQU\'cd!}
+const LAST_PLAY_KEY = 'lastPlayDate';
+const spinButton = document.getElementById('spinButton');
+const resultMessage = document.getElementById('resultMessage');
+
+function checkPlayStatus() {
+    const lastPlay = localStorage.getItem(LAST_PLAY_KEY);
+    const today = new Date().toDateString(); 
+    if (lastPlay === today) {
+        showResult(`❌ Límite diario alcanzado. Ya jugaste hoy. Vuelve mañana para tener otra oportunidad.`, 'failure');
+        spinButton.disabled = true;
+        spinButton.textContent = 'VUELVE MAÑANA';
+        return;
+    }
+    spinGame(); 
+}
+
+function spinGame() {
+    const result = Math.floor(Math.random() * PROBABILIDAD_GANAR) + 1;
+
+    spinButton.disabled = true;
+    spinButton.textContent = 'GIRANDO...';
+
+    setTimeout(() => {
+        localStorage.setItem(LAST_PLAY_KEY, new Date().toDateString());
+
+        if (result === 1) { 
+            const winMessage = `
+                <h2>🎉 ¡¡FELICITACIONES!! ¡HAZ GANADO! 🎉</h2>
+                <p>Tu beneficio de hoy es: <strong>¡${PORCENTAJE_DESCUENTO} DE DESCUENTO!</strong></p>
+                <p>CÓDIGO DE CUPÓN: <strong>${CODIGO_DESCUENTO}</strong></p>
+                <p>Accede a tu catálogo ahora y usa tu descuento:</p>
+                <a href="${ENLACE_CATALOGO}" target="_blank">VER CATÁLOGO AHORA</a>
+            `;
+            showResult(winMessage, 'success');
+        } else {
+            const loseMessage = `
+                <h2>😔 Mejor Suerte la Próxima Vez.</h2>
+                <p>No ganaste el descuento hoy. ¡Vuelve mañana para intentar de nuevo!</p>
+            `;
+            showResult(loseMessage, 'failure');
+        }
+
+        spinButton.textContent = 'VUELVE MAÑANA';
+    }, 1500); 
+}
+
+function showResult(htmlContent, className) {
+    resultMessage.innerHTML = htmlContent;
+    resultMessage.className = className;
+    resultMessage.classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', checkPlayStatus);
