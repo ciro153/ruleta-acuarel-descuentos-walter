@@ -1,0 +1,60 @@
+// --- CONFIGURACIÓN CLAVE ---
+const PROBABILIDAD_GANAR = 4; // Probabilidad: 1 de cada 4 giros gana (25%). Cambia el 4 si quieres otra dificultad.
+const CODIGO_DESCUENTO = "RULETA-5OFF"; 
+const PORCENTAJE_DESCUENTO = "5%";
+const ENLACE_CATALOGO = "https://www.tuempresa.com/catalogo"; // 👈 ¡REEMPLAZA ESTE LINK POR EL REAL!
+// ----------------------------
+
+const LAST_PLAY_KEY = 'lastPlayDate';
+const spinButton = document.getElementById('spinButton');
+const resultMessage = document.getElementById('resultMessage');
+
+function checkPlayStatus() {
+    const lastPlay = localStorage.getItem(LAST_PLAY_KEY);
+    const today = new Date().toDateString(); 
+    if (lastPlay === today) {
+        showResult(`❌ Límite diario alcanzado. Ya jugaste hoy. Vuelve mañana para tener otra oportunidad.`, 'failure');
+        spinButton.disabled = true;
+        spinButton.textContent = 'VUELVE MAÑANA';
+        return;
+    }
+    spinGame();
+}
+
+function spinGame() {
+    const result = Math.floor(Math.random() * PROBABILIDAD_GANAR) + 1;
+
+    spinButton.disabled = true;
+    spinButton.textContent = 'GIRANDO...';
+
+    setTimeout(() => {
+        localStorage.setItem(LAST_PLAY_KEY, new Date().toDateString());
+        
+        if (result === 1) { 
+            const winMessage = `
+                <h2>🎉 ¡¡FELICITACIONES!! ¡HAZ GANADO! 🎉</h2>
+                <p>Tu beneficio de hoy es: <strong>¡${PORCENTAJE_DESCUENTO} DE DESCUENTO!</strong></p>
+                <p>CÓDIGO DE CUPÓN: <strong>${CODIGO_DESCUENTO}</strong></p>
+                <p>Accede a tu catálogo ahora y usa tu descuento:</p>
+                <a href="${ENLACE_CATALOGO}" target="_blank">VER CATÁLOGO AHORA</a>
+            `;
+            showResult(winMessage, 'success');
+        } else {
+            const loseMessage = `
+                <h2>😔 Mejor Suerte la Próxima Vez.</h2>
+                <p>No ganaste el descuento hoy. ¡Vuelve mañana para intentar de nuevo!</p>
+            `;
+            showResult(loseMessage, 'failure');
+        }
+        
+        spinButton.textContent = 'VUELVE MAÑANA';
+    }, 1500); 
+}
+
+function showResult(htmlContent, className) {
+    resultMessage.innerHTML = htmlContent;
+    resultMessage.className = className;
+    resultMessage.classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', checkPlayStatus);
